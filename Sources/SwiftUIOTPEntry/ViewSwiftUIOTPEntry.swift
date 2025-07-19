@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-// MARK: - TEXT FIELD NUMBERS BOXS
+// MARK: - OTP ENTRY VIEW
 /// A SwiftUI View that displays a row of text fields for entering numbers (e.g., OTP or PIN input).
 public struct ViewSwiftUIOTPEntry: View {
 
@@ -17,6 +17,7 @@ public struct ViewSwiftUIOTPEntry: View {
     /// The complete number entered by the user, bound to an external state.
     @Binding var number: String
     
+    /// Binding to control keyboard dismissal state.
     @Binding var isDismissKeyboard: Bool
     
     /// Array holding the value of each individual text field box.
@@ -31,10 +32,11 @@ public struct ViewSwiftUIOTPEntry: View {
     /// The index to programmatically focus a text field.
     @State private var focusIndex: Int? = nil
 
-    /// Initializes the ViewTextFieldsNumberBoxs with a model and a binding to the number string.
+    /// Initializes the ViewSwiftUIOTPEntry with a model and bindings for number and keyboard state.
     /// - Parameters:
     ///   - model: The UI model for the text fields.
     ///   - number: The binding to the number string.
+    ///   - isDismissKeyboard: The binding to control keyboard dismissal.
     public init(model: ModelUISwiftUIOTPEntry, number: Binding<String>, isDismissKeyboard: Binding<Bool>) {
         self.model = model
         _number = number
@@ -105,9 +107,6 @@ public struct ViewSwiftUIOTPEntry: View {
         }
     }
 
-    public func dismissKeyboard() {
-        self.focusedField = nil
-    }
 }
 
 
@@ -116,21 +115,21 @@ public struct ViewSwiftUIOTPEntry: View {
 fileprivate struct EnhancedTextField: UIViewRepresentable {
     
     /// The placeholder text for the text field.
-    let placeholder: String // text field placeholder
+    let placeholder: String
     /// The font used for the text field.
-    let font: UIFont // Font of the each number on the Box
+    let font: UIFont
     /// The index of this text field in the row.
-    let index: Int // Index of each box in the row
+    let index: Int
     /// The number of boxes that have been filled.
-    let codeFilledCount: Int // The counter
+    let codeFilledCount: Int
     /// The total number of boxes.
     let count: Int
     /// The binding to the currently focused field index.
     @Binding var focusedField: Int?
     /// The binding to the text value of this field.
-    @Binding var text: String // input binding
+    @Binding var text: String
     /// Callback for when backspace is pressed on an empty field.
-    let onBackspace: (Bool) -> Void // true if backspace on empty input
+    let onBackspace: (Bool) -> Void
     
     /// Creates the coordinator for the EnhancedTextField.
     func makeCoordinator() -> EnhancedTextFieldCoordinator {
@@ -233,10 +232,8 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
             // Get the last character of the String
             let newValue = String(cleanValue.suffix(1))
             
-            // Get the current index locally only for porpuse of Debugging
+            // Current index and filled count for validation
             let currentIndex = self.index
-
-            // Get the current index locally only for porpuse of Debugging
             let currentFilled = self.codeFilledCount
 
             // If the value is Empty, must delete only if it's the last member

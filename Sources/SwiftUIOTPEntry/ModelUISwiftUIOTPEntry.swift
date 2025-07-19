@@ -9,13 +9,26 @@
 import SwiftUI
 
 public struct ModelUISwiftUIOTPEntry: Sendable {
+    
+    /// `Font of each number in the row`
     let font: UIFont
+    
+    /// `The number of square boxes to fill with numbers`
     let count: Int
+    
+    /// `The space in horizontal between each square box`
     let spacing: CGFloat
+    
+    /// `The color of the border of the square when an item is focused`
     let colorFocused: Color
+    
+    /// `The color of the border of the square when an item is not focused and also NOT filled with a number`
     let colorEmpty: Color
+
+    /// `The color of the border of the square when an item is not focused and also IS filled with a number`
     let colorFill: Color
     
+    /// `The size of each square box (take into account that each box is a square)`
     let size: CGFloat
     
     public init(font: UIFont, count: Int, spacing: CGFloat, colorFocused: Color, colorEmpty: Color, colorFill: Color, size: CGFloat) {
