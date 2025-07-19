@@ -54,33 +54,50 @@ Then include it in your target:
 import SwiftUI
 import SwiftUIOTPEntry
 
+/// Main view that demonstrates the usage of the SwiftUIOTPEntry component
+/// This view displays an OTP (One-Time Password) input field with 6 digits
 struct ContentView: View {
     
-    let model: ModelUISwiftUIOTPEntry = .init(font: .systemFont(ofSize: 20),
-                                              count: 6,
-                                              spacing: 8,
-                                              colorFocused: .red,
-                                              colorEmpty: .gray,
-                                              colorFill: .green, 
-                                              size: 55)
+    /// Configuration model for the OTP component
+    /// Defines the visual style and behavior of the input field
+    let model: ModelUISwiftUIOTPEntry = .init(
+        font: .systemFont(ofSize: 20),      // Text font
+        count: 6,                           // Number of OTP digits
+        spacing: 8,                         // Spacing between fields
+        colorFocused: .red,                 // Color when field is focused
+        colorEmpty: .gray,                  // Color when field is empty
+        colorFill: .green,                  // Color when field has content
+        size: 55                            // Size of each individual field
+    )
         
-        
+    /// State variable that stores the entered OTP number
+    /// Updates automatically when user enters digits
     @State var number: String = ""
     
-    /// `Bool for dismiss the keyboard
+    /// State variable to control keyboard dismissal
+    /// When true, the keyboard is automatically hidden
     @State var isDismissKeyboard: Bool = false
     
     var body: some View {
         ZStack {
+            // White background that allows closing keyboard by tapping outside the field
             Color.white.onTapGesture {
                 isDismissKeyboard = true
             }
             
-            ViewSwiftUIOTPEntry(model: model, number: $number, isDismissKeyboard: $isDismissKeyboard)
+            // Main OTP input component
+            // Connects with state variables to synchronize data
+            ViewSwiftUIOTPEntry(
+                model: model,                    // Component configuration
+                number: $number,                 // OTP number binding
+                isDismissKeyboard: $isDismissKeyboard  // Keyboard control binding
+            )
         }
     }
 }
 
+/// Preview view for development and testing
+/// Allows viewing the component in Xcode Preview
 #Preview {
     ContentView()
 }
