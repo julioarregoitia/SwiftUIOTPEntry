@@ -11,7 +11,7 @@
 - 📱 Built with SwiftUI
 - 🔢 Supports variable code lengths (default: 6 digits)
 - 🎨 Easy customization of colors, borders, and behavior
-- ♿️ Enhanced accessibility (VoiceOver support, Dynamic Type for accessibility texts)
+- ♿️ Enhanced accessibility (VoiceOver support and Dynamic Type for accessibility texts)
 - 🔐 Ideal for OTP and authentication flows
 
 ---
