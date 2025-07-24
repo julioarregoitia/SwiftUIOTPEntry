@@ -70,6 +70,8 @@ public struct ViewSwiftUIOTPEntry: View {
                 .stroke(strokeColor(for: index), lineWidth: 1))
                 .focused($focusedField, equals: index)
                 .tag(index)
+                .accessibilityLabel(Text(model.textAccessibilityPosition + ":" + String(index + 1)))
+                .accessibilityValue(Text(code[index].isEmpty ? model.textAccessibilityForEmptyBox : code[index]))
                 .onChange(of: focusIndex) { oldValue, newValue in
                     // Update focus when focusIndex changes
                     focusedField = newValue
@@ -166,6 +168,7 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         view.textAlignment = .center
         view.keyboardType = .numberPad
         view.font = font
+        view.adjustsFontForContentSizeCategory = true
 
         return view
     }

@@ -11,6 +11,7 @@
 - 📱 Built with SwiftUI
 - 🔢 Supports variable code lengths (default: 6 digits)
 - 🎨 Easy customization of colors, borders, and behavior
+- ♿️ Enhanced accessibility (VoiceOver support, Dynamic Type for accessibility texts)
 - 🔐 Ideal for OTP and authentication flows
 
 ---
@@ -61,13 +62,15 @@ struct ContentView: View {
     /// Configuration model for the OTP component
     /// Defines the visual style and behavior of the input field
     let model: ModelUISwiftUIOTPEntry = .init(
-        font: .systemFont(ofSize: 20),      // Text font
-        count: 6,                           // Number of OTP digits
-        spacing: 8,                         // Spacing between fields
-        colorFocused: .red,                 // Color when field is focused
-        colorEmpty: .gray,                  // Color when field is empty
-        colorFill: .green,                  // Color when field has content
-        size: 55                            // Size of each individual field
+        font: .systemFont(ofSize: 20),             // Text font
+        textAccessibilityForEmptyBox: "Empty box", // The info for VoiceOver when a box is empty
+        textAccessibilityPosition: "Position",     // The position of a box for VoiceOver
+        count: 6,                                  // Number of OTP digits
+        spacing: 8,                                // Spacing between fields
+        colorFocused: .red,                        // Color when field is focused
+        colorEmpty: .gray,                         // Color when field is empty
+        colorFill: .green,                         // Color when field has content
+        size: 55                                   // Size of each individual field
     )
         
     /// State variable that stores the entered OTP number
@@ -114,6 +117,12 @@ struct ModelUISwiftUIOTPEntry {
     /// `Font of each number in the row`
     let font: UIFont
     
+    /// `The text with a box is empty to say with VoiceOver`
+    let textAccessibilityForEmptyBox: String
+    
+    /// `The text for VoiceOver to say a position`
+    let textAccessibilityPosition: String
+
     /// `The number of square boxes to fill with numbers`
     let count: Int
     
