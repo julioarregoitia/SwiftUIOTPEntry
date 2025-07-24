@@ -13,6 +13,12 @@ public struct ModelUISwiftUIOTPEntry: Sendable {
     /// `Font of each number in the row`
     let font: UIFont
     
+    /// `The text with a box is empty to say with VoiceOver`
+    let textAccessibilityForEmptyBox: String
+    
+    /// `The text for VoiceOver to say a position`
+    let textAccessibilityPosition: String
+    
     /// `The number of square boxes to fill with numbers`
     let count: Int
     
@@ -31,8 +37,10 @@ public struct ModelUISwiftUIOTPEntry: Sendable {
     /// `The size of each square box (take into account that each box is a square)`
     let size: CGFloat
     
-    public init(font: UIFont, count: Int, spacing: CGFloat, colorFocused: Color, colorEmpty: Color, colorFill: Color, size: CGFloat) {
+    public init(font: UIFont, textAccessibilityForEmptyBox: String, textAccessibilityPosition: String, count: Int, spacing: CGFloat, colorFocused: Color, colorEmpty: Color, colorFill: Color, size: CGFloat) {
         self.font = font
+        self.textAccessibilityForEmptyBox = textAccessibilityForEmptyBox
+        self.textAccessibilityPosition = textAccessibilityPosition
         self.count = count
         self.spacing = spacing
         self.colorFocused = colorFocused

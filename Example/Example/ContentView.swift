@@ -15,13 +15,15 @@ struct ContentView: View {
     /// Configuration model for the OTP component
     /// Defines the visual style and behavior of the input field
     let model: ModelUISwiftUIOTPEntry = .init(
-        font: .systemFont(ofSize: 20),      // Text font
-        count: 6,                           // Number of OTP digits
-        spacing: 8,                         // Spacing between fields
-        colorFocused: .red,                 // Color when field is focused
-        colorEmpty: .gray,                  // Color when field is empty
-        colorFill: .green,                  // Color when field has content
-        size: 55                            // Size of each individual field
+        font: .preferredFont(forTextStyle: .body),             // Text font
+        textAccessibilityForEmptyBox: "Empty box", // The info for VoiceOver when a box is empty
+        textAccessibilityPosition: "Position",     // The position of a box for VoiceOver
+        count: 6,                                  // Number of OTP digits
+        spacing: 8,                                // Spacing between fields
+        colorFocused: .red,                        // Color when field is focused
+        colorEmpty: .gray,                         // Color when field is empty
+        colorFill: .green,                         // Color when field has content
+        size: 55                                   // Size of each individual field
     )
         
     /// State variable that stores the entered OTP number
