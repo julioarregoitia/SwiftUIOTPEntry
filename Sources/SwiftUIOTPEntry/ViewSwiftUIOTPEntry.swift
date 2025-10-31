@@ -6,11 +6,20 @@
 //
 
 import SwiftUI
+import Combine
 
 // MARK: - OTP ENTRY VIEW
 /// A SwiftUI View that displays a row of text fields for entering numbers (e.g., OTP or PIN input).
 public struct ViewSwiftUIOTPEntry: View {
 
+    // Keep Combine subscriptions in @State so they persist across view updates (SwiftUI re-renders)
+    // and are tied to this view's lifetime. This prevents the cancellables from being recreated
+    // on each body recomputation and ensures the pipeline stays alive while the view is on-screen.
+    @State var subscriptions: Set<AnyCancellable> = .init()
+    
+    // Publisher used to receive each individual digit from the text fields (emitted on every key press or paste fragment).
+    @State var publisherForCodeFromMessage: PassthroughSubject<String, Never> = .init()
+    
     /// UI model containing configuration for the OTP entry fields.
     let model: ModelUISwiftUIOTPEntry
     
@@ -49,7 +58,7 @@ public struct ViewSwiftUIOTPEntry: View {
         // OTP INPUT ROW
         HStack(spacing: model.spacing) {
             ForEach(0..<model.count, id: \.self) { index in
-                EnhancedTextField(placeholder: "", font: model.font, index: index, codeFilledCount: codeFilledCount, count: model.count, focusedField: $focusIndex, text: $code[index], code: $code) { onEmpty in
+                EnhancedTextField(publisherForCodeFromMessage: publisherForCodeFromMessage, placeholder: "", font: model.font, index: index, codeFilledCount: codeFilledCount, count: model.count, focusedField: $focusIndex, text: $code[index], code: $code) { onEmpty in
                                         
                     let currentFilled = self.codeFilledCount
                     // Check if the focus is in the last filled box or the next one that is empty
@@ -100,6 +109,24 @@ public struct ViewSwiftUIOTPEntry: View {
                 self.focusedField = nil
             }
         }
+        .task {
+            // Accumulate all digit fragments coming from the text fields within a short time window
+            // and then emit them together as a single string. This behaves like a time-based buffer
+            // (collect-by-time) instead of a classic debounce that only forwards the last value.
+            publisherForCodeFromMessage
+                // Collect every value received during a 250ms window on the main queue.
+                // Example: if the keyboard/autofill emits multiple small chunks quickly,
+                // they will be grouped in one batch.
+                .collect(.byTime(DispatchQueue.main, .seconds(0.25)))
+                // Join the collected array of strings into one single string to process as a whole code.
+                .map { $0.joined() }
+                // Send the accumulated code to our handler once the time window closes.
+                .sink { joined in
+                    self.receiveText(text: joined)
+                }
+                // Keep the subscription alive while this view is active.
+                .store(in: &subscriptions)
+        }
     }
     
     /// Returns the appropriate border color for a given text field index.
@@ -122,11 +149,40 @@ public struct ViewSwiftUIOTPEntry: View {
         }
     }
 
+    private func receiveText(text: String) {
+        // Normalize the incoming string to digits only (ignore spaces, non-digits, etc.).
+        let cleanValue = text.onlyDigits()
+
+        // Only handle multi-character input here (e.g., paste/autofill bursts). Single-key strokes are handled by the text fields themselves.
+        if cleanValue.count > 1 {
+            
+            // Proceed only if the incoming code matches the expected OTP length.
+            if cleanValue.count == model.count {
+                
+                // Split the code into individual characters and place each one into its corresponding text field box.
+                for (i, char) in cleanValue.enumerated() {
+                    self.code[i] = String(char)
+                }
+
+                // Wait briefly to ensure UI bindings/updates have settled before dismissing the keyboard.
+                Task { @MainActor in
+                    try await Task.sleep(for: .seconds(0.2))
+
+                    // Clear focus to dismiss the keyboard and stop further edits.
+                    self.focusedField = nil
+                    self.focusIndex = nil
+                }
+            }
+        }
+    }
 }
 
 // MARK: - ENHANCED TEXT FIELD
 /// A UIViewRepresentable wrapper for a custom UITextField that supports enhanced behaviors for OTP/PIN entry.
 fileprivate struct EnhancedTextField: UIViewRepresentable {
+    
+    // Publisher used to receive each individual digit from the text fields (emitted on every key press or paste fragment).
+    let publisherForCodeFromMessage: PassthroughSubject<String, Never>
     
     /// The placeholder text for the text field.
     let placeholder: String
@@ -157,7 +213,7 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
     
     /// Creates the coordinator for the EnhancedTextField.
     func makeCoordinator() -> EnhancedTextFieldCoordinator {
-        EnhancedTextFieldCoordinator(textBinding: $text, index: index, codeFilledCount: codeFilledCount, count: count, focusedField: $focusedField, code: $code)
+        EnhancedTextFieldCoordinator(publisherForCodeFromMessage: publisherForCodeFromMessage, textBinding: $text, index: index, codeFilledCount: codeFilledCount, count: count, focusedField: $focusedField, code: $code)
     }
     
     /// Creates the underlying UITextField view.
@@ -169,6 +225,7 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         view.keyboardType = .numberPad
         view.font = font
         view.adjustsFontForContentSizeCategory = true
+        view.textContentType = .oneTimeCode
 
         return view
     }
@@ -181,6 +238,8 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         context.coordinator.codeFilledCount = codeFilledCount
     }
     
+    
+    // MARK: ENCHACED TEXT FIELD
     /// Custom UITextField subclass that detects backspace events.
     class EnhancedUITextField: UITextField {
         /// Closure called when backspace is pressed.
@@ -202,8 +261,13 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         }
     }
     
+    
+    // MARK: - ENCHACE TEXT FIELD COORDINATOR
     /// Coordinator class to bridge UITextFieldDelegate methods to SwiftUI bindings and manage OTP logic.
     class EnhancedTextFieldCoordinator: NSObject, UITextFieldDelegate {
+        // Publisher used to receive each individual digit from the text fields (emitted on every key press or paste fragment).
+        let publisherForCodeFromMessage: PassthroughSubject<String, Never>
+        
         /// Binding to the text value of this field.
         let textBinding: Binding<String>
         
@@ -224,13 +288,15 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
 
         /// Initializes the coordinator.
         /// - Parameters:
+        ///   - publisherForCodeFromMessage: Publisher used to receive each individual digit from the text fields (emitted on every key press or paste fragment).
         ///   - textBinding: Binding to the text value.
         ///   - index: Index of the field.
         ///   - codeFilledCount: Number of filled boxes.
         ///   - count: Total number of boxes.
         ///   - focusedField: Binding to the focused field index.
         ///   - code: Binding to the code array.
-        init(textBinding: Binding<String>, index: Int, codeFilledCount: Int, count: Int, focusedField: Binding<Int?>, code: Binding<[String]>) {
+        init(publisherForCodeFromMessage: PassthroughSubject<String, Never>, textBinding: Binding<String>, index: Int, codeFilledCount: Int, count: Int, focusedField: Binding<Int?>, code: Binding<[String]>) {
+            self.publisherForCodeFromMessage = publisherForCodeFromMessage
             self.textBinding = textBinding
             self.index = index
             self.codeFilledCount = codeFilledCount
@@ -270,6 +336,9 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
             // Remove the extra characters to leave only the digits
             let cleanValue = string.onlyDigits()
             
+            // Publish the current digit (or pasted fragment) so the view's Combine pipeline can collect and process it.
+            publisherForCodeFromMessage.send(cleanValue)
+
             // Handle paste of full code
             if cleanValue.count > 1 {
                 
@@ -323,3 +392,4 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         }
     }
 }
+
