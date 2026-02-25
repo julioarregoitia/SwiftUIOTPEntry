@@ -384,7 +384,34 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
             }
             
 
-            return true
+            // Branch on (currentText.isEmpty, newValue.isEmpty) to handle all input states clearly
+            // without nested if/else. Each case covers a distinct scenario.
+            switch (currentText.isEmpty, newValue.isEmpty) {
+            case (_, true):
+                // newValue is empty — the character typed was non-digit and got stripped.
+                // Allow the no-op replacement; real deletions are handled by deleteBackward().
+                return true
+
+            case (true, false), (false, false):
+                // A valid digit arrived regardless of whether the field was empty or already filled.
+                // Overwrite the field with the single new digit and advance focus to the next box.
+                textField.text = newValue
+                self.textBinding.wrappedValue = newValue
+                advanceBox()
+                return true
+            }
+        }
+        
+        /// Moves focus to the next box after a digit is entered, or dismisses the keyboard when the last box is filled.
+        private func advanceBox() {
+            // Check if it's not the last box of the row
+            if index < count - 1 {
+                focusedField.wrappedValue = index + 1
+
+                // When it's the last box of the row gets the keyboard off
+            } else {
+                focusedField.wrappedValue = nil
+            }
         }
         
         /// Moves focus to the next box after a digit is entered, or dismisses the keyboard when the last box is filled.
