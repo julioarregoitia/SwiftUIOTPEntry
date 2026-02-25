@@ -11,7 +11,7 @@ import Combine
 // MARK: - OTP ENTRY VIEW
 /// A SwiftUI View that displays a row of text fields for entering numbers (e.g., OTP or PIN input).
 public struct ViewSwiftUIOTPEntry: View {
-
+    
     // Keep Combine subscriptions in @State so they persist across view updates (SwiftUI re-renders)
     // and are tied to this view's lifetime. This prevents the cancellables from being recreated
     // on each body recomputation and ensures the pipeline stays alive while the view is on-screen.
@@ -64,13 +64,12 @@ public struct ViewSwiftUIOTPEntry: View {
                     // Check if the focus is in the last filled box or the next one that is empty
                     guard currentFilled == index + 1 || currentFilled == index else { return }
                     
-                    // Move focus to the previous field if not the first
-                    if index > 0 {
-                        focusedField = index - 1
-                    }
-                    
                     // If it's not empty, that means the cursos is on front of the number and still needs to be erased
-                    if !onEmpty {
+                    if onEmpty, index > 0 {
+                        code[index - 1] = ""
+                        focusIndex = index - 1
+                        
+                    } else {
                         code[index] = ""
                     }
                 }
@@ -273,19 +272,19 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
         
         /// The index of this text field in the row.
         let index: Int
-
+        
         /// The number of boxes that have been filled.
         var codeFilledCount: Int
-
+        
         /// The total number of boxes.
         let count: Int
-
+        
         /// Binding to the currently focused field index.
         let focusedField: Binding<Int?>
-
+        
         /// Binding to the entire code array.
         let code: Binding<[String]>
-
+        
         /// Initializes the coordinator.
         /// - Parameters:
         ///   - publisherForCodeFromMessage: Publisher used to receive each individual digit from the text fields (emitted on every key press or paste fragment).
@@ -304,7 +303,7 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
             self.focusedField = focusedField
             self.code = code
         }
-                
+        
         /// Controls whether the text field should begin editing, enforcing sequential entry.
         func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
             let currentIndex = self.index
@@ -337,8 +336,9 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
             let cleanValue = string.onlyDigits()
             
             // Publish the current digit (or pasted fragment) so the view's Combine pipeline can collect and process it.
+            // (ONLY USEFULL FOR THE COPY/PASTE SCENARIO
             publisherForCodeFromMessage.send(cleanValue)
-
+            
             // Handle paste of full code
             if cleanValue.count > 1 {
                 
@@ -363,32 +363,40 @@ fileprivate struct EnhancedTextField: UIViewRepresentable {
                 guard currentIndex + 1 == currentFilled else { return false }
             }
             
-            // Update the final value for the current textField
-            textField.text = newValue
-            self.textBinding.wrappedValue = newValue
-            
-            // If the value is empty, that means that the number was deleted
-            if newValue.isEmpty {
-                
-                // Check if the index is not the first, to go for the previous one
-                if index > 0 {
-                    focusedField.wrappedValue = index - 1
-                }
-                
-            // Go to this part if exists a value
-            } else {
-                
-                // Check if it's not the last box of the row
-                if index < count - 1 {
-                    focusedField.wrappedValue = index + 1
-                    
-                // When it's the last box of the row gets the keyboard off
-                } else {
-                    focusedField.wrappedValue = nil
-                }
+            // Snapshot the current text before any change is applied.
+            let currentText = textField.text ?? ""
+
+            // Branch on (currentText.isEmpty, newValue.isEmpty) to handle all input states clearly
+            // without nested if/else. Each case covers a distinct scenario.
+            switch (currentText.isEmpty, newValue.isEmpty) {
+            case (_, true):
+                // newValue is empty — the character typed was non-digit and got stripped.
+                // Allow the no-op replacement; real deletions are handled by deleteBackward().
+                return true
+
+            case (true, false), (false, false):
+                // A valid digit arrived regardless of whether the field was empty or already filled.
+                // Overwrite the field with the single new digit and advance focus to the next box.
+                textField.text = newValue
+                self.textBinding.wrappedValue = newValue
+                advanceBox()
+                return true
             }
+            
 
             return true
+        }
+        
+        /// Moves focus to the next box after a digit is entered, or dismisses the keyboard when the last box is filled.
+        private func advanceBox() {
+            // Check if it's not the last box of the row
+            if index < count - 1 {
+                focusedField.wrappedValue = index + 1
+
+                // When it's the last box of the row gets the keyboard off
+            } else {
+                focusedField.wrappedValue = nil
+            }
         }
     }
 }

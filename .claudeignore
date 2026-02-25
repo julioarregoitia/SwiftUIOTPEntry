@@ -1,0 +1,74 @@
+# --- Cococel Project - Claude Code Ignore File ---
+
+# Dependencies (High Token Cost)
+node_modules/
+bower_components/
+vendor/
+.venv/
+env/
+venv/
+
+# Build & Output (No need for Claude to read these)
+dist/
+build/
+out/
+.next/
+.nuxt/
+target/
+bin/
+obj/
+
+# Mobile Development (Codemagic/Flutter/Native)
+.dart_tool/
+.pub-cache/
+ios/Pods/
+ios/.symlinks/
+android/.gradle/
+*.ipa
+*.apk
+*.app
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment & Secrets (Safety & Cost)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+.serverless/
+
+# IDE & Tooling
+.vscode/
+.idea/
+.expo/
+.terraform/
+.vagrant/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Large Assets (Binary files kill the context window)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.pdf
+*.mp4
+*.zip
+*.tar.gz
+
+# Cache & Temporary
+.cache/
+.eslintcache
+.stylelintcache
+.prettiercache
