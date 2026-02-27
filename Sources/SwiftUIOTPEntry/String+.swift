@@ -8,8 +8,10 @@
 import Foundation
 
 extension String {
+    /// Returns a copy of the string containing only decimal digit characters.
     func onlyDigits() -> String {
-        let filtredUnicodeScalars = unicodeScalars.filter{CharacterSet.decimalDigits.contains($0)}
-        return String(String.UnicodeScalarView(filtredUnicodeScalars))
+        // Keep only scalars that are part of the decimal digit character set.
+        let filteredUnicodeScalars = unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }
+        return String(String.UnicodeScalarView(filteredUnicodeScalars))
     }
 }
