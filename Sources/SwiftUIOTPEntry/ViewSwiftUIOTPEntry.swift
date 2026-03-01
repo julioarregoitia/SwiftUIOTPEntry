@@ -9,7 +9,24 @@ import SwiftUI
 import Combine
 
 // MARK: - OTP ENTRY VIEW
-/// A SwiftUI View that displays a row of text fields for entering numbers (e.g., OTP or PIN input).
+/// A SwiftUI OTP/PIN entry component that renders a fixed number of digit boxes.
+///
+/// `ViewSwiftUIOTPEntry` manages focus movement, sequential digit entry, and paste/autofill handling
+/// for one-time codes. The final code is exposed through the `number` binding.
+///
+/// Example usage:
+/// ```swift
+/// @State private var otpCode: String = ""
+/// @State private var dismissKeyboard: Bool = false
+///
+/// var body: some View {
+///     ViewSwiftUIOTPEntry(
+///         model: ModelUISwiftUIOTPEntry(count: 6),
+///         number: $otpCode,
+///         isDismissKeyboard: $dismissKeyboard
+///     )
+/// }
+/// ```
 public struct ViewSwiftUIOTPEntry: View {
     
     // Keep Combine subscriptions in @State so they persist across view updates (SwiftUI re-renders)
@@ -36,11 +53,29 @@ public struct ViewSwiftUIOTPEntry: View {
     @State private var otpState: ViewModelOTPEntryState
     
 
-    /// Initializes the ViewSwiftUIOTPEntry with a model and bindings for number and keyboard state.
+    /// Creates an OTP entry view configured by a model and two bindings.
+    ///
+    /// Use this initializer to embed the component in a parent SwiftUI view and keep the
+    /// entered code synchronized with external state.
+    ///
+    /// Example:
+    /// ```swift
+    /// @State private var code = ""
+    /// @State private var dismissKeyboard = false
+    ///
+    /// var body: some View {
+    ///     ViewSwiftUIOTPEntry(
+    ///         model: ModelUISwiftUIOTPEntry(count: 6),
+    ///         number: $code,
+    ///         isDismissKeyboard: $dismissKeyboard
+    ///     )
+    /// }
+    /// ```
+    ///
     /// - Parameters:
-    ///   - model: The UI model for the text fields.
-    ///   - number: The binding to the code string.
-    ///   - isDismissKeyboard: The binding to control keyboard dismissal.
+    ///   - model: Configuration for OTP length, field size, spacing, colors, fonts, and accessibility strings.
+    ///   - number: Binding that receives the full OTP value as the user enters digits.
+    ///   - isDismissKeyboard: Binding used by the parent to request keyboard dismissal.
     public init(model: ModelUISwiftUIOTPEntry, number: Binding<String>, isDismissKeyboard: Binding<Bool>) {
         self.model = model
         _number = number

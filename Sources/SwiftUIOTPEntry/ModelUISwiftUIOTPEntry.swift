@@ -8,6 +8,24 @@
 
 import SwiftUI
 
+/// Configuration model for `ViewSwiftUIOTPEntry` styling and accessibility behavior.
+///
+/// Use this type to define OTP box count, spacing, sizing, colors, and VoiceOver strings.
+///
+/// Example:
+/// ```swift
+/// let config = ModelUISwiftUIOTPEntry(
+///     font: .systemFont(ofSize: 20, weight: .semibold),
+///     textAccessibilityForEmptyBox: "Empty",
+///     textAccessibilityPosition: "Position",
+///     count: 6,
+///     spacing: 10,
+///     colorFocused: .blue,
+///     colorEmpty: .gray,
+///     colorFill: .green,
+///     size: 44
+/// )
+/// ```
 public struct ModelUISwiftUIOTPEntry: Sendable {
     
     /// `Font of each number in the row`
@@ -37,6 +55,33 @@ public struct ModelUISwiftUIOTPEntry: Sendable {
     /// `The size of each square box (take into account that each box is a square)`
     let size: CGFloat
     
+    /// Creates a configuration model for the OTP entry view.
+    ///
+    /// - Parameters:
+    ///   - font: The font used to render each OTP digit.
+    ///   - textAccessibilityForEmptyBox: VoiceOver text announced when a box is empty.
+    ///   - textAccessibilityPosition: VoiceOver label used to announce the digit position.
+    ///   - count: Total number of OTP boxes.
+    ///   - spacing: Horizontal spacing between OTP boxes.
+    ///   - colorFocused: Border color for the currently focused box.
+    ///   - colorEmpty: Border color for an unfocused empty box.
+    ///   - colorFill: Border color for an unfocused box that contains a digit.
+    ///   - size: Side length of each OTP box.
+    ///
+    /// Example:
+    /// ```swift
+    /// let config = ModelUISwiftUIOTPEntry(
+    ///     font: .systemFont(ofSize: 20, weight: .semibold),
+    ///     textAccessibilityForEmptyBox: "Empty",
+    ///     textAccessibilityPosition: "Position",
+    ///     count: 6,
+    ///     spacing: 10,
+    ///     colorFocused: .blue,
+    ///     colorEmpty: .gray,
+    ///     colorFill: .green,
+    ///     size: 44
+    /// )
+    /// ```
     public init(font: UIFont, textAccessibilityForEmptyBox: String, textAccessibilityPosition: String, count: Int, spacing: CGFloat, colorFocused: Color, colorEmpty: Color, colorFill: Color, size: CGFloat) {
         self.font = font
         self.textAccessibilityForEmptyBox = textAccessibilityForEmptyBox

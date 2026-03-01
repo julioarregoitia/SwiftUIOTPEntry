@@ -8,9 +8,21 @@
 import SwiftUI
 
 // MARK: - OTP ENTRY STATE
-/// Observable state object that keeps `code` and `filledCount` synchronised.
-/// Every coordinator (one per box) shares the **same reference**, so `filledCount`
-/// is always up-to-date when UIKit asks `textFieldShouldBeginEditing`.
+/// Shared OTP entry state used by all input boxes in the component.
+/// 
+/// `ViewModelOTPEntryState` keeps the per-digit `code` array and the derived
+/// `filledCount` in sync, and stores UIKit text field references so focus can be
+/// moved imperatively between boxes.
+/// 
+/// Use one instance per OTP input so all coordinators operate on the same source
+/// of truth.
+/// 
+/// Example:
+/// ```swift
+/// let state = ViewModelOTPEntryState(count: 6)
+/// state.code[0] = "1"
+/// state.setTextFieldFirstResponder(at: 1)
+/// ```
 @Observable @MainActor
 final class ViewModelOTPEntryState {
     
@@ -59,7 +71,16 @@ final class ViewModelOTPEntryState {
         textFields[index]?.becomeFirstResponder()
     }
     
-    /// Sends `resignFirstResponder` through the responder chain to dismiss the keyboard.
+    /// Dismisses the current keyboard by asking the active first responder to resign.
+    ///
+    /// This method sends `resignFirstResponder` through the UIKit responder chain,
+    /// allowing whichever control is currently focused to relinquish first responder
+    /// status.
+    ///
+    /// Example:
+    /// ```swift
+    /// state.dismissKeyboard()
+    /// ```
     func dismissKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
