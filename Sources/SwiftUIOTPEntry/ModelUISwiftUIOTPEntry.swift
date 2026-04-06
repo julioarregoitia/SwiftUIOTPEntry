@@ -29,31 +29,31 @@ import SwiftUI
 public struct ModelUISwiftUIOTPEntry: Sendable {
     
     /// `Font of each number in the row`
-    let font: UIFont
+    public let font: UIFont
     
     /// `The text with a box is empty to say with VoiceOver`
-    let textAccessibilityForEmptyBox: String
+    public let textAccessibilityForEmptyBox: String
     
     /// `The text for VoiceOver to say a position`
-    let textAccessibilityPosition: String
+    public let textAccessibilityPosition: String
     
     /// `The number of square boxes to fill with numbers`
-    let count: Int
+    public let count: Int
     
     /// `The space in horizontal between each square box`
-    let spacing: CGFloat
+    public let spacing: CGFloat
     
     /// `The color of the border of the square when an item is focused`
-    let colorFocused: Color
+    public let colorFocused: Color
     
     /// `The color of the border of the square when an item is not focused and also NOT filled with a number`
-    let colorEmpty: Color
+    public let colorEmpty: Color
 
     /// `The color of the border of the square when an item is not focused and also IS filled with a number`
-    let colorFill: Color
+    public let colorFill: Color
     
     /// `The size of each square box (take into account that each box is a square)`
-    let size: CGFloat
+    public let size: CGFloat
     
     /// Creates a configuration model for the OTP entry view.
     ///

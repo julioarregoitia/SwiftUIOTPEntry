@@ -117,9 +117,8 @@ public struct ViewSwiftUIOTPEntry: View {
             
         } //: HSTACK
         .onChange(of: focusedField) { _, newValue in
-            if newValue != nil {
-                isDismissKeyboard = false
-            }
+            let isFocusedOff = newValue == nil
+            self.isDismissKeyboard = isFocusedOff
         }
         .onChange(of: otpState.code) { _, newValue in
             self.number = newValue.joined()

@@ -48,6 +48,12 @@ struct ContentView: View {
                 number: $number,                 // OTP number binding
                 isDismissKeyboard: $isDismissKeyboard  // Keyboard control binding
             )
+            .onChange(of: isDismissKeyboard) { _, newValue in
+                guard newValue, number.count == self.model.count else { return }
+                
+                // Example where send the code
+                print("AUTO SEND CODE IF NEEDED")
+            }
         }
     }
 }
